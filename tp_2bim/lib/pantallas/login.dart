@@ -34,11 +34,20 @@ class _LoginState extends State<Login> {
 
   @override
   Widget build(BuildContext context) {
+    String username = '';
+    String password = '';
+    String mail = '';
+
     return Scaffold(
+      backgroundColor: Colors.black,
+
       appBar: AppBar(
         title: const Text("Login"),
         centerTitle: true,
+        backgroundColor: Colors.blueGrey,
+        foregroundColor: Colors.white,
       ),
+
       body: Center(
         child: SingleChildScrollView(
           child: Column(
@@ -46,21 +55,33 @@ class _LoginState extends State<Login> {
             children: [
 
               const Text(
-                "Usuario",
+                'Usuario',
                 style: TextStyle(
-                  fontSize: 28,
+                  fontSize: 30,
                   fontWeight: FontWeight.bold,
+                  color: Colors.white,
                 ),
               ),
 
-              const SizedBox(height: 15),
+              const SizedBox(height: 20),
 
               SizedBox(
                 width: 220,
                 child: TextField(
                   controller: usernameController,
+                  style: const TextStyle(color: Colors.white),
                   decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
+                    hintText: "Ingrese su usuario",
+                    hintStyle: TextStyle(color: Colors.white54),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.blueGrey),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: Colors.blueGrey,
+                        width: 2,
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -68,21 +89,33 @@ class _LoginState extends State<Login> {
               const SizedBox(height: 25),
 
               const Text(
-                "Mail",
+                'Mail',
                 style: TextStyle(
-                  fontSize: 28,
+                  fontSize: 30,
                   fontWeight: FontWeight.bold,
+                  color: Colors.white,
                 ),
               ),
 
-              const SizedBox(height: 15),
+              const SizedBox(height: 20),
 
               SizedBox(
                 width: 220,
                 child: TextField(
                   controller: mailController,
+                  style: const TextStyle(color: Colors.white),
                   decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
+                    hintText: "Ingrese su mail",
+                    hintStyle: TextStyle(color: Colors.white54),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.blueGrey),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: Colors.blueGrey,
+                        width: 2,
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -90,22 +123,34 @@ class _LoginState extends State<Login> {
               const SizedBox(height: 25),
 
               const Text(
-                "Contraseña",
+                'Contraseña',
                 style: TextStyle(
-                  fontSize: 28,
+                  fontSize: 30,
                   fontWeight: FontWeight.bold,
+                  color: Colors.white,
                 ),
               ),
 
-              const SizedBox(height: 15),
+              const SizedBox(height: 20),
 
               SizedBox(
                 width: 220,
                 child: TextField(
                   controller: passwordController,
                   obscureText: true,
+                  style: const TextStyle(color: Colors.white),
                   decoration: const InputDecoration(
-                    border: OutlineInputBorder(),
+                    hintText: "Ingrese su contraseña",
+                    hintStyle: TextStyle(color: Colors.white54),
+                    enabledBorder: OutlineInputBorder(
+                      borderSide: BorderSide(color: Colors.blueGrey),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderSide: BorderSide(
+                        color: Colors.blueGrey,
+                        width: 2,
+                      ),
+                    ),
                   ),
                 ),
               ),
@@ -115,56 +160,78 @@ class _LoginState extends State<Login> {
               ElevatedButton(
                 onPressed: () {
 
-                  String username = usernameController.text;
-                  String password = passwordController.text;
-                  String mail = mailController.text;
+                  username = usernameController.text;
+                  password = passwordController.text;
+                  mail = mailController.text;
 
-                  if (username.isEmpty ||
-                      password.isEmpty ||
-                      mail.isEmpty) {
+                  setState(() {
 
-                    mensaje = "Complete todos los campos";
+                    if (username.isEmpty ||
+                        password.isEmpty ||
+                        mail.isEmpty) {
 
-                  } else {
-
-                    bool encontrado = false;
-
-                    for (Usuario usuario in usuarios) {
-
-                      if (usuario.username == username &&
-                          usuario.password == password &&
-                          usuario.mail == mail) {
-
-                        encontrado = true;
-                        break;
-                      }
-                    }
-
-                    if (encontrado) {
-
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) => const Lista(),
-                        ),
-                      );
-
-                      return;
+                      mensaje = "Complete todos los campos";
 
                     } else {
 
-                      mensaje = "Usuario o contraseña incorrectos";
-                    }
-                  }
+                      bool encontrado = false;
 
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text(mensaje),
-                    ),
-                  );
+                      for (Usuario usuario in usuarios) {
+
+                        if (username == usuario.username &&
+                            password == usuario.password &&
+                            mail == usuario.mail) {
+
+                          encontrado = true;
+                          break;
+                        }
+                      }
+
+                      if (encontrado) {
+
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => const Lista(),
+                          ),
+                        );
+
+                      } else {
+
+                        mensaje = "Usuario, mail o contraseña incorrectos";
+
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            backgroundColor: Colors.red,
+                            content: Text(
+                              mensaje,
+                              style: const TextStyle(color: Colors.white),
+                            ),
+                          ),
+                        );
+                      }
+                    }
+                  });
                 },
-                child: const Text("Ingresar"),
+
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blueGrey,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 35,
+                    vertical: 15,
+                  ),
+                ),
+
+                child: const Text(
+                  "Ingresar",
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
               ),
+
             ],
           ),
         ),
