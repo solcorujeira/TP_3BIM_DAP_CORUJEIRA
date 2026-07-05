@@ -10,7 +10,7 @@ class Lista extends StatelessWidget {
     List<Animal> animales = [
       Animal(
   nombre: "Yaguareté",
-  imagen: "https://upload.wikimedia.org/wikipedia/commons/9/92/Panthera_onca_PyS.jpg",
+  imagen: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSbZ1j8BSAzLYKqY2BIeE8Z2D3n1g7qn8sOxwp8Wd3GlUPGbafHzrohdEE8YQPfGlzrPCurj4zTBfngPVq3tqKyzwomPPGNdaMNLl2Q5Q&s=10",
   descripcion:
       "Es el felino más grande de América y habita en la Selva Misionera y el Gran Chaco.",
   peligro: "En peligro crítico",
@@ -19,7 +19,7 @@ class Lista extends StatelessWidget {
 
 Animal(
   nombre: "Cóndor Andino",
-  imagen: "https://upload.wikimedia.org/wikipedia/commons/5/5d/Andean_condor.jpg",
+  imagen: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcS0VRSLR57uMgu1TLi0-CPGsDBmnYnA9q7ZH0gAs6VOfQ&s=10",
   descripcion:
       "Ave emblemática de la Cordillera de los Andes y una de las aves voladoras más grandes del mundo.",
   peligro: "Vulnerable",
@@ -28,7 +28,7 @@ Animal(
 
 Animal(
   nombre: "Puma",
-  imagen: "https://upload.wikimedia.org/wikipedia/commons/e/e0/Puma_concolor.jpg",
+  imagen: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRLD5Doa_jzPMwcQhVl8r2rLaXEyAWkF-Mt6KwFgHPoaQ&s=10",
   descripcion:
       "Gran felino que vive en montañas, bosques y estepas de Argentina.",
   peligro: "Preocupación menor",
@@ -37,7 +37,7 @@ Animal(
 
 Animal(
   nombre: "Guanaco",
-  imagen: "https://upload.wikimedia.org/wikipedia/commons/0/0f/Guanaco_Patagonia.jpg",
+  imagen: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRN5ET0yvhAjl-wvf3SpxZg9LQV8570atkAFO32N-APqT6_AgTuSxGNKldq&s=10",
   descripcion:
       "Mamífero típico de la Patagonia y pariente silvestre de la llama.",
   peligro: "Preocupación menor",
@@ -46,7 +46,7 @@ Animal(
 
 Animal(
   nombre: "Carpincho",
-  imagen: "https://upload.wikimedia.org/wikipedia/commons/b/bf/Capybara_%28Hydrochoerus_hydrochaeris%29.JPG",
+  imagen: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR1mzThObqs5jLF6FcEWDLz5bTQGtfI-5Uyzf4WyLAK7A&s=10",
   descripcion:
       "Es el roedor más grande del mundo y habita en ríos, lagunas y esteros.",
   peligro: "Preocupación menor",
@@ -55,7 +55,7 @@ Animal(
 
 Animal(
   nombre: "Tapir",
-  imagen: "https://upload.wikimedia.org/wikipedia/commons/8/88/Tapirus_terrestris.jpg",
+  imagen: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTeTLTgmzJM_jWcojnuRI5G1QNV4X5kF3jTkD3tVruFYg&s=10",
   descripcion:
       "También llamado anta. Vive en las selvas del norte argentino.",
   peligro: "Vulnerable",
@@ -64,7 +64,7 @@ Animal(
 
 Animal(
   nombre: "Lobito de Río",
-  imagen: "https://upload.wikimedia.org/wikipedia/commons/7/74/Lontra_longicaudis.jpg",
+  imagen: "https://media.todojujuy.com/p/92ee44b982a4a36cad72a01b0221a01b/adjuntos/227/imagenes/003/238/0003238811/1200x675/smart/lobito-rio.png",
   descripcion:
       "Mamífero acuático que vive en ríos y arroyos del noreste argentino.",
   peligro: "En peligro",
@@ -73,7 +73,7 @@ Animal(
 
 Animal(
   nombre: "Aguará Guazú",
-  imagen: "https://upload.wikimedia.org/wikipedia/commons/4/45/Maned_wolf-aguara_guazu.jpeg",
+  imagen: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQZUMy35R-4HPorevQ_PrtTBy17MMxAzTCdbcpEVoYw4JzsgGjlcV3-EPk5&s=10",
   descripcion:
       "Es el cánido más grande de Sudamérica. Habita en pastizales y humedales del norte argentino.",
   peligro: "Casi amenazado",
@@ -82,7 +82,7 @@ Animal(
 
 Animal(
   nombre: "Ñandú",
-  imagen: "https://upload.wikimedia.org/wikipedia/commons/8/8b/Rhea_americana.jpg",
+  imagen: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcSdqih9c-12mlXfTuyCxgeoZ-5OrF_G-MwR9HUBdq9LQlvfwLmu30mp_XzA&s=10",
   descripcion:
       "Ave corredora típica de las llanuras argentinas.",
   peligro: "Casi amenazado",
@@ -91,7 +91,7 @@ Animal(
 
 Animal(
   nombre: "Oso Hormiguero Gigante",
-  imagen: "https://upload.wikimedia.org/wikipedia/commons/8/87/Giant_anteater.jpg",
+  imagen: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ2Q7kaGddkyY_RdKZ3hTxbBbHkXpILQGv6O6rbBDkYksxlBfKApAMecdqW&s=10",
   descripcion:
       "Mamífero que habita en el norte argentino y se alimenta principalmente de hormigas y termitas.",
   peligro: "Vulnerable",
