@@ -5,6 +5,7 @@ import 'package:tp_2bim/modelos/animal.dart';
 import 'package:tp_2bim/providers/animal_provider.dart';
 import 'package:tp_2bim/pantallas/detalle.dart';
 import 'package:tp_2bim/pantallas/formulario_animal.dart';
+import 'package:tp_2bim/pantallas/login.dart';
 
 class Lista extends ConsumerWidget {
   const Lista({super.key});
@@ -26,6 +27,46 @@ class Lista extends ConsumerWidget {
         centerTitle: true,
         backgroundColor: Colors.blueGrey,
         foregroundColor: Colors.white,
+
+        // AGREGADO: botón cerrar sesión
+        actions: [
+          IconButton(
+            icon: const Icon(Icons.logout),
+            onPressed: () {
+              showDialog(
+                context: context,
+                builder: (context) {
+                  return AlertDialog(
+                    title: const Text("Cerrar sesión"),
+                    content: const Text(
+                      "¿Estás seguro de que querés cerrar sesión?",
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                        },
+                        child: const Text("No"),
+                      ),
+                      TextButton(
+                        onPressed: () {
+                          Navigator.pushAndRemoveUntil(
+                            context,
+                            MaterialPageRoute(
+                              builder: (context) => const Login(),
+                            ),
+                            (route) => false,
+                          );
+                        },
+                        child: const Text("Sí"),
+                      ),
+                    ],
+                  );
+                },
+              );
+            },
+          ),
+        ],
       ),
 
       body: animales.isEmpty
