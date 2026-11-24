@@ -6,12 +6,12 @@ import 'package:tp_2bim/providers/animal_provider.dart';
 
 class FormularioAnimal extends ConsumerStatefulWidget {
   final Animal? animal;
-  final int? index;
+  final String? idDoc;
 
   const FormularioAnimal({
     super.key,
     this.animal,
-    this.index,
+    this.idDoc,
   });
 
   @override
@@ -19,13 +19,14 @@ class FormularioAnimal extends ConsumerStatefulWidget {
       _FormularioAnimalState();
 }
 
-class _FormularioAnimalState
-    extends ConsumerState<FormularioAnimal> {
+class _FormularioAnimalState extends ConsumerState<FormularioAnimal> {
   late TextEditingController nombreController;
   late TextEditingController imagenController;
   late TextEditingController descripcionController;
   late TextEditingController peligroController;
   late TextEditingController especimenesController;
+
+  bool guardando = false;
 
   bool get editando => widget.animal != null;
 
@@ -34,23 +35,23 @@ class _FormularioAnimalState
     super.initState();
 
     nombreController = TextEditingController(
-      text: widget.animal?.nombre ?? "",
+      text: widget.animal?.nombre ?? '',
     );
 
     imagenController = TextEditingController(
-      text: widget.animal?.imagen ?? "",
+      text: widget.animal?.imagen ?? '',
     );
 
     descripcionController = TextEditingController(
-      text: widget.animal?.descripcion ?? "",
+      text: widget.animal?.descripcion ?? '',
     );
 
     peligroController = TextEditingController(
-      text: widget.animal?.peligro ?? "",
+      text: widget.animal?.peligro ?? '',
     );
 
     especimenesController = TextEditingController(
-      text: widget.animal?.especimenes.toString() ?? "",
+      text: widget.animal?.especimenes.toString() ?? '',
     );
   }
 
@@ -61,36 +62,22 @@ class _FormularioAnimalState
     descripcionController.dispose();
     peligroController.dispose();
     especimenesController.dispose();
-
     super.dispose();
   }
 
   InputDecoration decoracion(String texto) {
     return InputDecoration(
       labelText: texto,
-
-      labelStyle: const TextStyle(
-        color: Colors.white70,
-      ),
-
+      labelStyle: const TextStyle(color: Colors.white70),
       filled: true,
-
       fillColor: Colors.blueGrey.shade900,
-
       border: OutlineInputBorder(
-        borderRadius:
-            BorderRadius.circular(15),
-
+        borderRadius: BorderRadius.circular(15),
         borderSide: BorderSide.none,
       ),
-
-      focusedBorder:
-          OutlineInputBorder(
-        borderRadius:
-            BorderRadius.circular(15),
-
-        borderSide:
-            const BorderSide(
+      focusedBorder: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(15),
+        borderSide: const BorderSide(
           color: Colors.blueGrey,
           width: 2,
         ),
@@ -98,21 +85,14 @@ class _FormularioAnimalState
     );
   }
 
-  void guardar() {
-    final nombre =
-        nombreController.text.trim();
+  Future<void> guardar() async {
+    if (guardando) return;
 
-    final imagen =
-        imagenController.text.trim();
-
-    final descripcion =
-        descripcionController.text.trim();
-
-    final peligro =
-        peligroController.text.trim();
-
-    final especimenes =
-        int.tryParse(
+    final nombre = nombreController.text.trim();
+    final imagen = imagenController.text.trim();
+    final descripcion = descripcionController.text.trim();
+    final peligro = peligroController.text.trim();
+    final especimenes = int.tryParse(
       especimenesController.text.trim(),
     );
 
@@ -120,22 +100,33 @@ class _FormularioAnimalState
         imagen.isEmpty ||
         descripcion.isEmpty ||
         peligro.isEmpty ||
-        especimenes == null) {
-      ScaffoldMessenger.of(context)
-          .showSnackBar(
+        especimenes == null ||
+        especimenes < 0) {
+      ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(
-          content: Text(
-            "Completá todos los campos correctamente",
-          ),
-          backgroundColor:
-              Colors.redAccent,
+          content: Text('Completá todos los campos correctamente'),
+          backgroundColor: Colors.redAccent,
         ),
       );
-
       return;
     }
 
-    final Animal animalNuevo = Animal(
+    final idParaEditar = widget.idDoc ?? widget.animal?.id;
+
+    if (editando && (idParaEditar == null || idParaEditar.isEmpty)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+          content: Text(
+            'No se encontró el ID del animal que querés editar.',
+          ),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+      return;
+    }
+
+    final animalNuevo = Animal(
+      id: idParaEditar,
       nombre: nombre,
       imagen: imagen,
       descripcion: descripcion,
@@ -143,262 +134,149 @@ class _FormularioAnimalState
       especimenes: especimenes,
     );
 
-    if (editando &&
-        widget.index != null) {
-      ref
-          .read(
-            animalesProvider.notifier,
-          )
-          .editar(
-            widget.index!,
-            animalNuevo,
-          );
-    } else {
-      ref
-          .read(
-            animalesProvider.notifier,
-          )
-          .agregar(
-            animalNuevo,
-          );
-    }
+    setState(() {
+      guardando = true;
+    });
 
-    Navigator.pop(
-      context,
-      animalNuevo,
-    );
+    try {
+      final servicio = ref.read(animalServiceProvider);
+
+      if (editando) {
+        await servicio.editar(idParaEditar!, animalNuevo);
+      } else {
+        await servicio.agregar(animalNuevo);
+      }
+
+      if (!mounted) return;
+
+      Navigator.pop(context, true);
+    } catch (e) {
+      if (!mounted) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error al guardar: $e'),
+          backgroundColor: Colors.redAccent,
+        ),
+      );
+    } finally {
+      if (mounted) {
+        setState(() {
+          guardando = false;
+        });
+      }
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.black,
-
       appBar: AppBar(
         backgroundColor: Colors.blueGrey,
-
         foregroundColor: Colors.white,
-
         centerTitle: true,
-
-        title: Text(
-          editando
-              ? "Editar animal"
-              : "Agregar animal",
-        ),
+        title: Text(editando ? 'Editar animal' : 'Agregar animal'),
       ),
-
       body: SafeArea(
         child: SingleChildScrollView(
-          padding:
-              const EdgeInsets.all(20),
-
+          padding: const EdgeInsets.all(20),
           child: Column(
-            crossAxisAlignment:
-                CrossAxisAlignment.stretch,
-
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Center(
                 child: Container(
                   width: 90,
                   height: 90,
-
-                  decoration:
-                      BoxDecoration(
-                    color:
-                        Colors.blueGrey.shade900,
-
-                    shape:
-                        BoxShape.circle,
+                  decoration: BoxDecoration(
+                    color: Colors.blueGrey.shade900,
+                    shape: BoxShape.circle,
                   ),
-
                   child: Icon(
-                    editando
-                        ? Icons.edit
-                        : Icons.add,
-
+                    editando ? Icons.edit : Icons.add,
                     color: Colors.white,
-
                     size: 45,
                   ),
                 ),
               ),
-
-              const SizedBox(
-                height: 20,
-              ),
-
+              const SizedBox(height: 20),
               Text(
-                editando
-                    ? "Modificar información"
-                    : "Nuevo animal",
-
+                editando ? 'Modificar información' : 'Nuevo animal',
                 textAlign: TextAlign.center,
-
                 style: const TextStyle(
                   color: Colors.white,
-
                   fontSize: 25,
-
-                  fontWeight:
-                      FontWeight.bold,
+                  fontWeight: FontWeight.bold,
                 ),
               ),
-
-              const SizedBox(
-                height: 8,
-              ),
-
+              const SizedBox(height: 8),
               Text(
                 editando
-                    ? "Modificá los datos del animal"
-                    : "Completá los datos para agregarlo",
-
+                    ? 'Modificá los datos del animal'
+                    : 'Completá los datos para agregarlo',
                 textAlign: TextAlign.center,
-
                 style: const TextStyle(
                   color: Colors.white70,
-
                   fontSize: 15,
                 ),
               ),
-
-              const SizedBox(
-                height: 30,
-              ),
-
+              const SizedBox(height: 30),
               TextField(
-                controller:
-                    nombreController,
-
-                style: const TextStyle(
-                  color: Colors.white,
-                ),
-
-                decoration:
-                    decoracion(
-                  "Nombre",
-                ),
+                controller: nombreController,
+                style: const TextStyle(color: Colors.white),
+                decoration: decoracion('Nombre'),
               ),
-
-              const SizedBox(
-                height: 16,
-              ),
-
+              const SizedBox(height: 16),
               TextField(
-                controller:
-                    imagenController,
-
-                style: const TextStyle(
-                  color: Colors.white,
-                ),
-
-                decoration:
-                    decoracion(
-                  "URL de imagen",
-                ),
+                controller: imagenController,
+                style: const TextStyle(color: Colors.white),
+                decoration: decoracion('URL de imagen'),
               ),
-
-              const SizedBox(
-                height: 16,
-              ),
-
+              const SizedBox(height: 16),
               TextField(
-                controller:
-                    descripcionController,
-
-                style: const TextStyle(
-                  color: Colors.white,
-                ),
-
+                controller: descripcionController,
+                style: const TextStyle(color: Colors.white),
                 maxLines: 4,
-
-                decoration:
-                    decoracion(
-                  "Descripción",
-                ),
+                decoration: decoracion('Descripción'),
               ),
-
-              const SizedBox(
-                height: 16,
-              ),
-
+              const SizedBox(height: 16),
               TextField(
-                controller:
-                    peligroController,
-
-                style: const TextStyle(
-                  color: Colors.white,
-                ),
-
-                decoration:
-                    decoracion(
-                  "Estado de conservación",
-                ),
+                controller: peligroController,
+                style: const TextStyle(color: Colors.white),
+                decoration: decoracion('Estado de conservación'),
               ),
-
-              const SizedBox(
-                height: 16,
-              ),
-
+              const SizedBox(height: 16),
               TextField(
-                controller:
-                    especimenesController,
-
-                keyboardType:
-                    TextInputType.number,
-
-                style: const TextStyle(
-                  color: Colors.white,
-                ),
-
-                decoration:
-                    decoracion(
-                  "Número de especímenes",
-                ),
+                controller: especimenesController,
+                keyboardType: TextInputType.number,
+                style: const TextStyle(color: Colors.white),
+                decoration: decoracion('Número de especímenes'),
               ),
-
-              const SizedBox(
-                height: 30,
-              ),
-
+              const SizedBox(height: 30),
               SizedBox(
                 height: 55,
-
-                child:
-                    ElevatedButton(
-                  onPressed: guardar,
-
-                  style:
-                      ElevatedButton.styleFrom(
-                    backgroundColor:
-                        Colors.blueGrey,
-
-                    foregroundColor:
-                        Colors.white,
-
-                    shape:
-                        RoundedRectangleBorder(
-                      borderRadius:
-                          BorderRadius.circular(
-                        15,
-                      ),
+                child: ElevatedButton(
+                  onPressed: guardando ? null : guardar,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.blueGrey,
+                    foregroundColor: Colors.white,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(15),
                     ),
                   ),
-
-                  child: Text(
-                    editando
-                        ? "Guardar cambios"
-                        : "Agregar animal",
-
-                    style:
-                        const TextStyle(
-                      fontSize: 17,
-
-                      fontWeight:
-                          FontWeight.bold,
-                    ),
-                  ),
+                  child: guardando
+                      ? const CircularProgressIndicator(
+                          color: Colors.white,
+                        )
+                      : Text(
+                          editando
+                              ? 'Guardar cambios'
+                              : 'Agregar animal',
+                          style: const TextStyle(
+                            fontSize: 17,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
                 ),
               ),
             ],

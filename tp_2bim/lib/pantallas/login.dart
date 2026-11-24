@@ -1,13 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:tp_2bim/pantallas/lista.dart';
-
-class Usuario {
-  String username;
-  String mail;
-  String password;
-
-  Usuario(this.username, this.mail, this.password);
-}
+import 'package:firebase_auth/firebase_auth.dart';
 
 class Login extends StatefulWidget {
   const Login({super.key});
@@ -17,297 +9,220 @@ class Login extends StatefulWidget {
 }
 
 class _LoginState extends State<Login> {
-  TextEditingController usernameController = TextEditingController();
-  TextEditingController passwordController = TextEditingController();
-  TextEditingController confirmarPasswordController =
+  final TextEditingController emailController =
       TextEditingController();
-  TextEditingController mailController = TextEditingController();
 
-  String mensaje = '';
+  final TextEditingController passwordController =
+      TextEditingController();
 
-  List<Usuario> usuarios = [
-    Usuario("Sol", "sol@gmail.com", "1234"),
-    Usuario("Pablo", "juan@gmail.com", "abcd"),
-    Usuario("Mia", "mia@gmail.com", "hola"),
-    Usuario("Messi", "messi@gmail.com", "meencantaelfulbo"),
-    Usuario("Antonio", "antonio@gmail.com", "cambridge"),
-    Usuario("Trueno", "trueno@gmail.com", "comuna4"),
-  ];
+  bool cargando = false;
+
+  void mostrarMensaje(String mensaje) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        backgroundColor: Colors.red,
+        content: Text(
+          mensaje,
+          style: const TextStyle(color: Colors.white),
+        ),
+      ),
+    );
+  }
+
+  Future<void> ingresar() async {
+    final email = emailController.text.trim();
+    final password = passwordController.text;
+
+    if (email.isEmpty || password.isEmpty) {
+      mostrarMensaje('Complete todos los campos');
+      return;
+    }
+
+    final emailValido = RegExp(
+      r'^[^@\s]+@[^@\s]+\.[^@\s]+$',
+    ).hasMatch(email);
+
+    if (!emailValido) {
+      mostrarMensaje('Ingrese un email válido');
+      return;
+    }
+
+    setState(() {
+      cargando = true;
+    });
+
+    try {
+      await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      // Cerramos Login para que AuthGate muestre Lista.
+      if (mounted) {
+        Navigator.pop(context);
+      }
+
+    } on FirebaseAuthException catch (e) {
+      String mensaje;
+
+      switch (e.code) {
+        case 'user-not-found':
+        case 'invalid-credential':
+        case 'wrong-password':
+          mensaje = 'Email o contraseña incorrectos';
+          break;
+
+        case 'invalid-email':
+          mensaje = 'El email no es válido';
+          break;
+
+        case 'user-disabled':
+          mensaje = 'Esta cuenta está deshabilitada';
+          break;
+
+        case 'too-many-requests':
+          mensaje = 'Demasiados intentos. Intente más tarde';
+          break;
+
+        case 'network-request-failed':
+          mensaje = 'Error de conexión. Verifique internet';
+          break;
+
+        default:
+          mensaje = 'No se pudo iniciar sesión: ${e.code}';
+      }
+
+      if (mounted) {
+        mostrarMensaje(mensaje);
+      }
+
+    } catch (e) {
+      if (mounted) {
+        mostrarMensaje('Ocurrió un error: $e');
+      }
+
+    } finally {
+      if (mounted) {
+        setState(() {
+          cargando = false;
+        });
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    String username = '';
-    String password = '';
-    String confirmarPassword = '';
-    String mail = '';
-
     return Scaffold(
       backgroundColor: Colors.black,
-
       appBar: AppBar(
-        title: const Text("Login"),
+        title: const Text('Iniciar sesión'),
         centerTitle: true,
         backgroundColor: Colors.blueGrey,
         foregroundColor: Colors.white,
-        toolbarHeight: 50,
       ),
-
       body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-
-            const Text(
-              'Usuario',
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
+        child: SingleChildScrollView(
+          padding: const EdgeInsets.symmetric(vertical: 16),
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              campo(
+                'Email',
+                emailController,
+                'Ingrese su email',
+                tipo: TextInputType.emailAddress,
               ),
-            ),
-
-            const SizedBox(height: 8),
-
-            SizedBox(
-              width: 220,
-              height: 45,
-              child: TextField(
-                controller: usernameController,
-                style: const TextStyle(color: Colors.white),
-                decoration: const InputDecoration(
-                  hintText: "Ingrese su usuario",
-                  hintStyle: TextStyle(color: Colors.white54),
-                  contentPadding: EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 8,
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: Colors.blueGrey),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(
-                      color: Colors.blueGrey,
-                      width: 2,
-                    ),
+              const SizedBox(height: 15),
+              campo(
+                'Contraseña',
+                passwordController,
+                'Ingrese su contraseña',
+                ocultar: true,
+              ),
+              const SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: cargando ? null : ingresar,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.blueGrey,
+                  foregroundColor: Colors.white,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: 35,
+                    vertical: 12,
                   ),
                 ),
-              ),
-            ),
-
-            const SizedBox(height: 12),
-
-            const Text(
-              'Mail',
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-
-            const SizedBox(height: 8),
-
-            SizedBox(
-              width: 220,
-              height: 45,
-              child: TextField(
-                controller: mailController,
-                style: const TextStyle(color: Colors.white),
-                decoration: const InputDecoration(
-                  hintText: "Ingrese su mail",
-                  hintStyle: TextStyle(color: Colors.white54),
-                  contentPadding: EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 8,
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: Colors.blueGrey),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(
-                      color: Colors.blueGrey,
-                      width: 2,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 12),
-
-            const Text(
-              'Contraseña',
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-
-            const SizedBox(height: 8),
-
-            SizedBox(
-              width: 220,
-              height: 45,
-              child: TextField(
-                controller: passwordController,
-                obscureText: true,
-                style: const TextStyle(color: Colors.white),
-                decoration: const InputDecoration(
-                  hintText: "Ingrese su contraseña",
-                  hintStyle: TextStyle(color: Colors.white54),
-                  contentPadding: EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 8,
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: Colors.blueGrey),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(
-                      color: Colors.blueGrey,
-                      width: 2,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 12),
-
-            const Text(
-              'Confirmar contraseña',
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-
-            const SizedBox(height: 8),
-
-            SizedBox(
-              width: 220,
-              height: 45,
-              child: TextField(
-                controller: confirmarPasswordController,
-                obscureText: true,
-                style: const TextStyle(color: Colors.white),
-                decoration: const InputDecoration(
-                  hintText: "Repita su contraseña",
-                  hintStyle: TextStyle(color: Colors.white54),
-                  contentPadding: EdgeInsets.symmetric(
-                    horizontal: 10,
-                    vertical: 8,
-                  ),
-                  enabledBorder: OutlineInputBorder(
-                    borderSide: BorderSide(color: Colors.blueGrey),
-                  ),
-                  focusedBorder: OutlineInputBorder(
-                    borderSide: BorderSide(
-                      color: Colors.blueGrey,
-                      width: 2,
-                    ),
-                  ),
-                ),
-              ),
-            ),
-
-            const SizedBox(height: 18),
-
-            ElevatedButton(
-              onPressed: () {
-                username = usernameController.text;
-                password = passwordController.text;
-                confirmarPassword =
-                    confirmarPasswordController.text;
-                mail = mailController.text;
-
-                setState(() {
-                  if (username.isEmpty ||
-                      password.isEmpty ||
-                      confirmarPassword.isEmpty ||
-                      mail.isEmpty) {
-                    mensaje = "Complete todos los campos";
-
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        backgroundColor: Colors.red,
-                        content: Text(
-                          mensaje,
-                          style: const TextStyle(color: Colors.white),
+                child: cargando
+                    ? const CircularProgressIndicator(
+                        color: Colors.white,
+                      )
+                    : const Text(
+                        'Ingresar',
+                        style: TextStyle(
+                          fontSize: 17,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
-                    );
-                  } else if (password != confirmarPassword) {
-                    mensaje = "Las contraseñas no coinciden";
-
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        backgroundColor: Colors.red,
-                        content: Text(
-                          mensaje,
-                          style: const TextStyle(color: Colors.white),
-                        ),
-                      ),
-                    );
-                  } else {
-                    bool encontrado = false;
-
-                    for (Usuario usuario in usuarios) {
-                      if (username == usuario.username &&
-                          password == usuario.password &&
-                          mail == usuario.mail) {
-                        encontrado = true;
-                        break;
-                      }
-                    }
-
-                    if (encontrado) {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const Lista(),
-                        ),
-                      );
-                    } else {
-                      mensaje =
-                          "Usuario, mail o contraseña incorrectos";
-
-                      ScaffoldMessenger.of(context).showSnackBar(
-                        SnackBar(
-                          backgroundColor: Colors.red,
-                          content: Text(
-                            mensaje,
-                            style: const TextStyle(
-                              color: Colors.white,
-                            ),
-                          ),
-                        ),
-                      );
-                    }
-                  }
-                });
-              },
-
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.blueGrey,
-                foregroundColor: Colors.white,
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 35,
-                  vertical: 12,
-                ),
               ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 
-              child: const Text(
-                "Ingresar",
-                style: TextStyle(
-                  fontSize: 17,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-            ),
-          ],
+  Widget campo(
+    String titulo,
+    TextEditingController controller,
+    String hint, {
+    bool ocultar = false,
+    TextInputType tipo = TextInputType.text,
+  }) {
+    return Column(
+      children: [
+        Text(
+          titulo,
+          style: const TextStyle(
+            fontSize: 20,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+        const SizedBox(height: 8),
+        SizedBox(
+          width: 220,
+          child: TextField(
+            controller: controller,
+            obscureText: ocultar,
+            keyboardType: tipo,
+            style: const TextStyle(color: Colors.white),
+            decoration: campoDecoracion(hint),
+          ),
+        ),
+      ],
+    );
+  }
+
+  InputDecoration campoDecoracion(String texto) {
+    return InputDecoration(
+      hintText: texto,
+      hintStyle: const TextStyle(color: Colors.white54),
+      contentPadding: const EdgeInsets.symmetric(
+        horizontal: 10,
+        vertical: 12,
+      ),
+      enabledBorder: const OutlineInputBorder(
+        borderSide: BorderSide(color: Colors.blueGrey),
+      ),
+      focusedBorder: const OutlineInputBorder(
+        borderSide: BorderSide(
+          color: Colors.blueGrey,
+          width: 2,
         ),
       ),
     );
